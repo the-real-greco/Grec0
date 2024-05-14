@@ -29,8 +29,6 @@ void UCI::loop() {
                 board.reset();
                 std::string moves;
                 if (iss >> moves) {
-                    std::string moves;
-                    iss >> moves;
                     if (moves == "moves") {
                         while (iss >> moves) {
                             board.makeMove(moves);
