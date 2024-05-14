@@ -27,7 +27,13 @@ class Board {
 public:
     Piece board[64]; // 8x8 board represented as a 1D array
     Color sideToMove;
+    int enPassantSquare;
+    bool whiteCanCastleKingside;
+    bool whiteCanCastleQueenside;
+    bool blackCanCastleKingside;
+    bool blackCanCastleQueenside;
 
+    Board();
     std::vector<Move> generateLegalMoves();
 
 private:
