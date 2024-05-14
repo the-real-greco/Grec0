@@ -5,6 +5,8 @@
 
 namespace UCI {
 
+Board board;  // Define the board object
+
 void setPosition(const std::string& positionCommand) {
     std::istringstream iss(positionCommand);
     std::string token;
@@ -16,25 +18,20 @@ void setPosition(const std::string& positionCommand) {
     iss >> token;
     if (token == "startpos") {
         // Handle startpos case
-        std::cout << "Setting up position from the starting position" << std::endl;
-        // Initialize the board to the starting position
-        // Reset the board to the initial position
+        board.reset();
 
         // Read moves if any
         if (iss >> token && token == "moves") {
             std::string move;
             while (iss >> move) {
-                // Apply each move to the board
-                std::cout << "Applying move: " << move << std::endl;
-                // Apply the move to the board
+                board.applyMove(move);
             }
         }
     } else if (token == "fen") {
         // Handle FEN string case
         std::string fen;
         std::getline(iss, fen);
-        std::cout << "Setting up position from FEN: " << fen << std::endl;
-        // Set up the board from the FEN string
+        board.setFromFEN(fen);
     } else {
         std::cerr << "Unknown position type: " << token << std::endl;
     }
@@ -52,6 +49,7 @@ void loop() {
             std::cout << "readyok" << std::endl;
         } else if (input == "ucinewgame") {
             // Initialize or reset the engine state for a new game
+            board.reset();
         } else if (input.rfind("position", 0) == 0) {
             // Handle position command
             setPosition(input);
