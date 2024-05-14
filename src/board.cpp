@@ -1,6 +1,10 @@
 #include "board.h"
 #include <vector>
 
+Board::Board() : enPassantSquare(-1), 
+                 whiteCanCastleKingside(true), whiteCanCastleQueenside(true), 
+                 blackCanCastleKingside(true), blackCanCastleQueenside(true) {}
+
 // Utility to check if a position is on the board
 bool isOnBoard(int pos) {
     return pos >= 0 && pos < 64;
@@ -31,16 +35,24 @@ std::vector<Move> Board::generatePawnMoves(int pos) {
     std::vector<Move> moves;
     int direction = (sideToMove == WHITE) ? 1 : -1;
     int startRank = (sideToMove == WHITE) ? 1 : 6;
+    int promotionRank = (sideToMove == WHITE) ? 6 : 1;
 
     // Single move forward
     int to = pos + 8 * direction;
     if (isOnBoard(to) && board[to].type == EMPTY) {
-        moves.push_back({pos, to, EMPTY});
-        // Double move forward
-        if ((pos / 8) == startRank) {
-            to += 8 * direction;
-            if (isOnBoard(to) && board[to].type == EMPTY) {
-                moves.push_back({pos, to, EMPTY});
+        if ((pos / 8) == promotionRank) {
+            moves.push_back({pos, to, QUEEN});
+            moves.push_back({pos, to, ROOK});
+            moves.push_back({pos, to, BISHOP});
+            moves.push_back({pos, to, KNIGHT});
+        } else {
+            moves.push_back({pos, to, EMPTY});
+            // Double move forward
+            if ((pos / 8) == startRank) {
+                to += 8 * direction;
+                if (isOnBoard(to) && board[to].type == EMPTY) {
+                    moves.push_back({pos, to, EMPTY});
+                }
             }
         }
     }
@@ -50,6 +62,18 @@ std::vector<Move> Board::generatePawnMoves(int pos) {
     for (int capture : captures) {
         to = pos + capture;
         if (isOnBoard(to) && board[to].type != EMPTY && board[to].color != sideToMove) {
+            if ((pos / 8) == promotionRank) {
+                moves.push_back({pos, to, QUEEN});
+                moves.push_back({pos, to, ROOK});
+                moves.push_back({pos, to, BISHOP});
+                moves.push_back({pos, to, KNIGHT});
+            } else {
+                moves.push_back({pos, to, EMPTY});
+            }
+        }
+
+        // En passant capture
+        if (to == enPassantSquare) {
             moves.push_back({pos, to, EMPTY});
         }
     }
@@ -100,6 +124,23 @@ std::vector<Move> Board::generateKingMoves(int pos) {
         int to = pos + move;
         if (isOnBoard(to) && (board[to].type == EMPTY || board[to].color != sideToMove)) {
             moves.push_back({pos, to, EMPTY});
+        }
+    }
+
+    // Castling
+    if (sideToMove == WHITE) {
+        if (whiteCanCastleKingside && board[61].type == EMPTY && board[62].type == EMPTY && !isSquareAttacked(60, BLACK) && !isSquareAttacked(61, BLACK) && !isSquareAttacked(62, BLACK)) {
+            moves.push_back({60, 62, EMPTY});
+        }
+        if (whiteCanCastleQueenside && board[59].type == EMPTY && board[58].type == EMPTY && board[57].type == EMPTY && !isSquareAttacked(60, BLACK) && !isSquareAttacked(59, BLACK) && !isSquareAttacked(58, BLACK)) {
+            moves.push_back({60, 58, EMPTY});
+        }
+    } else {
+        if (blackCanCastleKingside && board[5].type == EMPTY && board[6].type == EMPTY && !isSquareAttacked(4, WHITE) && !isSquareAttacked(5, WHITE) && !isSquareAttacked(6, WHITE)) {
+            moves.push_back({4, 6, EMPTY});
+        }
+        if (blackCanCastleQueenside && board[3].type == EMPTY && board[2].type == EMPTY && board[1].type == EMPTY && !isSquareAttacked(4, WHITE) && !isSquareAttacked(3, WHITE) && !isSquareAttacked(2, WHITE)) {
+            moves.push_back({4, 2, EMPTY});
         }
     }
 
