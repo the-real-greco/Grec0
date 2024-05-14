@@ -1,14 +1,38 @@
-cmake_minimum_required(VERSION 3.10)
+# Compiler
+CXX = g++
 
-# Set the project name and version
-project(Grec0 VERSION 1.0)
+# Compiler flags
+CXXFLAGS = -std=c++17 -Wall -Wextra
 
-# Specify the C++ standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+# Directories
+INCDIR = include
+SRCDIR = src
+OBJDIR = obj
+BINDIR = bin
 
-# Add the include directory
-include_directories(include)
+# Create the necessary directories
+$(shell mkdir -p $(OBJDIR) $(BINDIR))
 
-# Add the executable
-add_executable(Grec0 src/main.cpp src/uci.cpp)
+# Source and object files
+SOURCES := $(wildcard $(SRCDIR)/*.cpp)
+OBJECTS := $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+
+# Executable name
+EXECUTABLE = $(BINDIR)/Grec0
+
+# Default target
+all: $(EXECUTABLE)
+
+# Link the object files to create the executable
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+# Compile source files into object files
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	$(CXX) $(CXXFLAGS) -I $(INCDIR) -c $< -o $@
+
+# Clean up build files
+clean:
+	rm -rf $(OBJDIR) $(BINDIR)
+
+.PHONY: all clean
