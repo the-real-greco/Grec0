@@ -1,66 +1,55 @@
 #include "uci.h"
+#include "board.h"
 #include <iostream>
 #include <sstream>
-#include <vector>
 
-namespace UCI {
+void UCI::loop() {
+    std::string line;
+    Board board;
 
-Board board;  // Define the board object
+    while (std::getline(std::cin, line)) {
+        std::istringstream iss(line);
+        std::string token;
+        iss >> token;
 
-void setPosition(const std::string& positionCommand) {
-    std::istringstream iss(positionCommand);
-    std::string token;
-
-    // Skip the "position" token
-    iss >> token;
-
-    // Determine the position type (fen or startpos)
-    iss >> token;
-    if (token == "startpos") {
-        // Handle startpos case
-        board.reset();
-
-        // Read moves if any
-        if (iss >> token && token == "moves") {
-            std::string move;
-            while (iss >> move) {
-                board.applyMove(move);
-            }
-        }
-    } else if (token == "fen") {
-        // Handle FEN string case
-        std::string fen;
-        std::getline(iss, fen);
-        board.setFromFEN(fen);
-    } else {
-        std::cerr << "Unknown position type: " << token << std::endl;
-    }
-}
-
-void loop() {
-    std::string input;
-    while (true) {
-        std::getline(std::cin, input);
-        if (input == "uci") {
+        if (token == "uci") {
             std::cout << "id name Grec0" << std::endl;
             std::cout << "id author YourName" << std::endl;
             std::cout << "uciok" << std::endl;
-        } else if (input == "isready") {
+        } else if (token == "isready") {
             std::cout << "readyok" << std::endl;
-        } else if (input == "ucinewgame") {
-            // Initialize or reset the engine state for a new game
+        } else if (token == "ucinewgame") {
             board.reset();
-        } else if (input.rfind("position", 0) == 0) {
-            // Handle position command
-            setPosition(input);
-        } else if (input.rfind("go", 0) == 0) {
-            // Handle go command (start searching for the best move)
-        } else if (input == "quit") {
+            std::cout << "Board reset to starting position." << std::endl;
+        } else if (token == "position") {
+            std::string subtoken;
+            iss >> subtoken;
+
+            if (subtoken == "startpos") {
+                board.reset();
+                std::string moves;
+                if (iss >> moves) {
+                    std::string moves;
+                    iss >> moves;
+                    if (moves == "moves") {
+                        while (iss >> moves) {
+                            board.makeMove(moves);
+                        }
+                    }
+                }
+            } else if (subtoken == "fen") {
+                std::string fen;
+                std::getline(iss, fen);
+                board.setPositionFromFEN(fen);
+            }
+        } else if (token == "go") {
+            // Implement engine calculation logic here
+            // For now, we'll just return a dummy move
+            std::cout << "bestmove e2e4" << std::endl;
+        } else if (token == "quit") {
             break;
         } else {
-            std::cerr << "Unknown command: " << input << std::endl;
+            std::cout << "Unknown command: " << line << std::endl;
         }
     }
 }
-
-} // namespace UCI
